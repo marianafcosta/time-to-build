@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>Time-to-build</title>
+  </head>
+
+  <body>
+    <main>
+      <h1>Time-to-build</h1>
+      <p>Track the amount of time you waste fixing your builds!</p>
+      <button id="start-button">Start</button>
+      <button id="stop-button">Stop</button>
+      <h2>Current debugging session (days:hours:minutes:seconds)</h2>
+      <p id="current-time-spent">0:00:00:00</p>
+      <h2>Total time spent debugging builds (days:hours:minutes:seconds)</h2>
+      <p id="total-time-spent">0:00:00:00</p>
+    </main>
+  </body>
+
+  <script>
+    let currTimeAcc = 0;
+    let totalTimeAcc = 0;
+    let interval;
+
+    const secondsToFormattedDate = (value) => {
+      const days = Math.floor(value / (60 * 60 * 24));
+      const daysRemainder = value % (60 * 60 * 24);
+      const hours = Math.floor(daysRemainder / (60 * 60));
+      const hoursRemainder = daysRemainder % (60 * 60);
+      const minutes = Math.floor(hoursRemainder / 60);
+      const seconds = hoursRemainder % 60;
+
+      return `${days}:${hours < 10 ? "0" + hours : hours}:${
+        minutes < 10 ? "0" + minutes : minutes
+      }:${seconds < 10 ? "0" + seconds : seconds}`;
+    };
+
+    const prevTotalTimeAcc = Number(localStorage.getItem("time-to-build"));
+    if (prevTotalTimeAcc) {
+      totalTimeAcc = prevTotalTimeAcc;
+      document.getElementById("total-time-spent").innerText =
+        secondsToFormattedDate(prevTotalTimeAcc);
+    }
+
+    document.getElementById("start-button").addEventListener("click", () => {
+      if (interval !== undefined) {
+        return;
+      }
+
+      currTimeAcc = 0;
+
+      interval = setInterval(() => {
+        currTimeAcc++;
+        document.getElementById("current-time-spent").innerText =
+          secondsToFormattedDate(currTimeAcc);
+      }, 1000);
+    });
+
+    document.getElementById("stop-button").addEventListener("click", () => {
+      if (interval === undefined) {
+        return;
+      }
+
+      totalTimeAcc += currTimeAcc;
+      currTimeAcc = 0;
+      document.getElementById("current-time-spent").innerText = `0:00:00:00`;
+      document.getElementById("total-time-spent").innerText =
+        secondsToFormattedDate(totalTimeAcc);
+      clearInterval(interval);
+      interval = undefined;
+      localStorage.setItem("time-to-build", totalTimeAcc);
+    });
+  </script>
+</html>
